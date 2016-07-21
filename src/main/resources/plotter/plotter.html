@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<style type="text/css" media="screen">
+		#editor {
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+		}
+		</style>
+		<script>
+			function plotLine(seriesData) {
+				var series = JSON.parse(seriesData);
+				/*
+				{
+						labels: labels,
+						series: [
+							data,
+							cumulativeAverage,
+							exponentialAverage
+						]
+					}
+				*/
+				var labels = [];
+				var data = [];
+				if (data.length > 0) {
+					var target = document.createElement("div");
+					var chart = new Chartist.Line(target, series, {
+						showArea: true,
+						axisX: {
+							labelInterpolationFnc: function skipLabels(value, index) {
+								var result = index % (value.length / 10.0) === 0 ? value : null;
+								return isNaN(result) ? null : result;
+							}
+						},
+						showPoint: false,
+						fullWidth: true,
+			/*			low: 0,*/
+						lineSmooth: Chartist.Interpolation.simple({
+							divisor: 2
+						}),
+					});
+					document.getElementById("plot").appendChild(target);
+				}
+			}
+		</script>
+		<script src="chartist-0.9.5.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<div id="plot"></div>
+	</body>
+</html>

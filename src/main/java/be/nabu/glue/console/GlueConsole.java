@@ -31,22 +31,15 @@ public class GlueConsole extends Application {
 		
 		controller = loader.getController();
 		controller.load(arguments);
+		controller.setStage(stage);
 		
 		Parent root = loader.getRoot();
 		Scene scene = new Scene(root);
 		stage.initStyle(StageStyle.DECORATED);
-//		scene.getStylesheets().add(Thread.currentThread().getContextClassLoader().getResource("style.css").toExternalForm());
 		stage.setScene(scene);
 		stage.setTitle("Glue Console");
 		stage.setMaximized(true);
 		stage.setResizable(true);
-//		InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("icon.png");
-//		try {
-//			stage.getIcons().add(new Image(stream));
-//		}
-//		finally {
-//			stream.close();
-//		}
 		stage.show();
 	}
 	

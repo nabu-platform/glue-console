@@ -12,6 +12,7 @@ public class ConsoleStaticMethodFactory implements StaticMethodFactory {
 		List<Class<?>> classes = new ArrayList<Class<?>>();
 		classes.add(GlueConsoleMethods.class);
 		classes.add(ChartMethods.class);
+		classes.add(SnippetMethods.class);
 		return classes;
 	}
 

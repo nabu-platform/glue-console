@@ -1,0 +1,3 @@
+be.nabu.glue.console.converters.TextInputControlToString
+be.nabu.glue.console.converters.LabelToString
+be.nabu.glue.console.converters.CheckBoxToBoolean

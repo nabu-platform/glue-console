@@ -43,6 +43,17 @@
 			<artifactId>glue-integrator</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>be.nabu.glue</groupId>
+			<artifactId>glue-json</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>be.nabu.glue</groupId>
+			<artifactId>glue-xml</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
 
 		<dependency>
 			<groupId>be.nabu.jfx</groupId>

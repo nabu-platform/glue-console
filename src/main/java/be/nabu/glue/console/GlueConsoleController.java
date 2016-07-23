@@ -1,7 +1,9 @@
 package be.nabu.glue.console;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -24,21 +26,27 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import be.nabu.glue.DynamicScript;
 import be.nabu.glue.Main;
 import be.nabu.glue.MultipleRepository;
 import be.nabu.glue.ScriptRuntime;
 import be.nabu.glue.api.ExecutorGroup;
 import be.nabu.glue.api.Parser;
+import be.nabu.glue.api.Script;
 import be.nabu.glue.impl.EnvironmentLabelEvaluator;
 import be.nabu.glue.impl.SimpleExecutionEnvironment;
 import be.nabu.glue.impl.formatters.SimpleOutputFormatter;
 import be.nabu.glue.impl.parsers.GlueParserProvider;
+import be.nabu.glue.repositories.ScannableScriptRepository;
 import be.nabu.jfx.control.ace.AceEditor;
+import be.nabu.libs.resources.file.FileDirectory;
+import be.nabu.utils.io.IOUtils;
 
 public class GlueConsoleController implements Closeable, Initializable {
 
 	private static GlueConsoleController instance;
+	private Stage stage;
 	
 	@FXML
 	private MenuItem mniClose;
@@ -57,6 +65,8 @@ public class GlueConsoleController implements Closeable, Initializable {
 	private ScriptRuntime runtime;
 	
 	private Parser parser;
+
+	private ScannableScriptRepository snippets;
 
 	@Override
 	public void close() throws IOException {
@@ -93,33 +103,85 @@ public class GlueConsoleController implements Closeable, Initializable {
 		current.subscribe("commit", new EventHandler<Event>() {
 			@Override
 			public void handle(Event event) {
-				String content = current.getContent();
-				try {
-					ExecutorGroup parsed = parser.parse(new StringReader(content));
-					parsed.execute(runtime.getExecutionContext());
-					history.setContent("text/x-glue", history.getContent() + content + "\n");
-					current.setContent("text/x-glue", "");
-				} 
-				catch (Exception e) {
-					StringWriter writer = new StringWriter();
-					PrintWriter printer = new PrintWriter(writer);
-					e.printStackTrace(printer);
-					runtime.getFormatter().print(writer.toString());
-				}
+				String content = run(current.getContent());
 				// if we don't run it later, the focus will switch and the key up event of the enter is still recorded by the editor
 				Platform.runLater(new Runnable() {
 					public void run() {
+						history.setContent("text/x-glue", history.getContent() + content + "\n");
+						current.setContent("text/x-glue", "");
 						current.requestFocus();
 					}
 				});
 				event.consume();
 			}
+
 		});
+	}
+	
+	private String run(String content) {
+		try {
+			ExecutorGroup parsed = parser.parse(new StringReader(content));
+			parsed.execute(runtime.getExecutionContext());
+		} 
+		catch (Exception e) {
+			StringWriter writer = new StringWriter();
+			PrintWriter printer = new PrintWriter(writer);
+			e.printStackTrace(printer);
+			runtime.getFormatter().print(writer.toString());
+		}
+		return content;
+	}
+	
+	private String initialScript;
+	
+	private void runInitial() {
+		String string = getInitialScriptName();
+		if (string != null) {
+			if (initialScript == null) {
+				synchronized(this) {
+					if (initialScript == null) {
+						Script script = getSnippets().getScript(string);
+						if (script != null) {
+							try {
+								InputStream source = script.getSource();
+								try {
+									byte[] bytes = IOUtils.toBytes(IOUtils.wrap(source));
+									initialScript = new String(bytes, "UTF-8");
+								}
+								finally {
+									source.close();
+								}
+							}
+							catch (IOException e) {
+								throw new RuntimeException(e);
+							}
+						}
+					}
+				}
+			}
+		}
+		if (initialScript != null) {
+			run(initialScript);
+		}
+	}
+
+	public String getInitialScriptName() {
+		return runtime.getExecutionContext().getExecutionEnvironment().getParameters().get("init");
+	}
+	
+	public void resetInitial() {
+		initialScript = null;
 	}
 	
 	public void load(String...arguments) throws IOException, URISyntaxException {
 		Charset charset = Main.getCharset(arguments);
 		MultipleRepository repository = Main.buildRepository(charset, arguments);
+		File file = new File(System.getProperty("user.home"), ".snippets");
+		if (!file.exists()) {
+			file.mkdirs();
+		}
+		snippets = new ScannableScriptRepository(repository, new FileDirectory(null, file, false), repository.getParserProvider(), Charset.forName("UTF-8"));
+		repository.add(snippets);
 		SimpleExecutionEnvironment environment = new SimpleExecutionEnvironment(Main.getEnvironmentName(arguments));
 		Main.setArguments(environment, arguments);
 		parser = new GlueParserProvider().newParser(repository, "console.glue");
@@ -128,6 +190,7 @@ public class GlueConsoleController implements Closeable, Initializable {
 		runtime.setLabelEvaluator(new EnvironmentLabelEvaluator(Main.getLabel(arguments)));
 		runtime.setFormatter(new SimpleOutputFormatter(new AceEditorWriter(log)));
 		runtime.registerInThread();
+		runInitial();
 	}
 	
 	public void clear() {
@@ -138,6 +201,7 @@ public class GlueConsoleController implements Closeable, Initializable {
 				history.setContent("text/x-glue", "");
 				log.setContent("text/x-glue", "");
 				current.requestFocus();
+				runInitial();
 			}
 		});
 	}
@@ -152,6 +216,18 @@ public class GlueConsoleController implements Closeable, Initializable {
 
 	public ScriptRuntime getRuntime() {
 		return runtime;
+	}
+
+	public ScannableScriptRepository getSnippets() {
+		return snippets;
+	}
+
+	public Stage getStage() {
+		return stage;
+	}
+
+	public void setStage(Stage stage) {
+		this.stage = stage;
 	}
 	
 }

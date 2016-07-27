@@ -1,9 +1,13 @@
 package be.nabu.glue.console;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.Chart;
@@ -28,6 +32,7 @@ import be.nabu.glue.annotations.GlueParam;
 import be.nabu.glue.api.Lambda;
 import be.nabu.glue.console.gui.ExtendedTableView;
 import be.nabu.glue.impl.GlueUtils;
+import be.nabu.glue.impl.methods.FileMethods;
 import be.nabu.libs.evaluator.annotations.MethodProviderClass;
 
 @MethodProviderClass(namespace = "console")
@@ -177,17 +182,16 @@ public class GlueConsoleMethods {
 		return new ExtendedTableView(columns, rows, aggregators);
 	}
 	
-	public static MyExample gen() {
-		return new MyExample();
+	public static Node fxml(String content) throws IOException {
+		FXMLLoader loader = new FXMLLoader();
+		loader.load(new ByteArrayInputStream(content.getBytes("UTF-8")));
+		return loader.getRoot();
 	}
 	
-	public static class MyExample {
-		private java.util.List<String> strings = new ArrayList<String>();
-		public void add(String...strings) {
-			this.strings.addAll(java.util.Arrays.asList(strings));
-		}
-		public java.util.List<String> get() {
-			return strings;
+	public static void style(String...files) throws IOException {
+		for (String file : files) {
+			URI uri = FileMethods.uri(file);
+			GlueConsoleController.getInstance().getStage().getScene().getStylesheets().add(uri.toString());
 		}
 	}
 }

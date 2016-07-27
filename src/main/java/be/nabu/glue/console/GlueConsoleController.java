@@ -41,6 +41,8 @@ import be.nabu.glue.impl.parsers.GlueParserProvider;
 import be.nabu.glue.repositories.ScannableScriptRepository;
 import be.nabu.jfx.control.ace.AceEditor;
 import be.nabu.libs.resources.file.FileDirectory;
+import be.nabu.libs.resources.internal.VFSURLStreamHandlerFactory;
+import be.nabu.utils.io.ContentTypeMap;
 import be.nabu.utils.io.IOUtils;
 
 public class GlueConsoleController implements Closeable, Initializable {
@@ -75,6 +77,9 @@ public class GlueConsoleController implements Closeable, Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		VFSURLStreamHandlerFactory.register();
+		ContentTypeMap.register();
+		
 		instance = this;
 		history = new AceEditor();
 		current = new AceEditor();

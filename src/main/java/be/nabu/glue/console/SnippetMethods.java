@@ -17,6 +17,7 @@ import be.nabu.jfx.control.ace.AceEditor;
 import be.nabu.libs.evaluator.annotations.MethodProviderClass;
 import be.nabu.libs.resources.ResourceUtils;
 import be.nabu.libs.resources.api.ManageableContainer;
+import be.nabu.libs.resources.api.ReadableResource;
 import be.nabu.libs.resources.api.Resource;
 import be.nabu.libs.resources.api.ResourceContainer;
 import be.nabu.libs.resources.api.WritableResource;
@@ -31,12 +32,36 @@ public class SnippetMethods {
 		return GlueConsoleController.getInstance().getSnippets();
 	}
 	
-	public static void edit(String fullName) throws IOException {
-		String currentSource = null;
+	public static Tab edit(String fullName, String resourceToEdit) throws IOException {
 		final Resource resource;
 		final Script script = GlueConsoleController.getInstance().getSnippets().getScript(fullName);
-		if (script != null) {
-			InputStream source = script.getSource();
+		
+		if (resourceToEdit != null) {
+			if (script == null) {
+				throw new IOException("Could not find script: " + fullName);
+			}
+			else if (!(script instanceof ResourceScript)) {
+				throw new IOException("Can not edit script: " + fullName);
+			}
+			else {
+				ResourceContainer<?> parent = ((ResourceScript) script).getResource().getParent();
+				resource = ResourceUtils.touch(parent, script.getName() + "/" + resourceToEdit);
+			}
+		}
+		else {
+			if (script == null) {
+				resource = ResourceUtils.touch(GlueConsoleController.getInstance().getSnippets().getRoot(), fullName.replace('.', '/') + ".glue");
+			}
+			else if (!(script instanceof ResourceScript)) {
+				throw new IOException("Can not edit script: " + fullName);
+			}
+			else {
+				resource = ((ResourceScript) script).getResource();
+			}
+		}
+		String currentSource = null;
+		if (resource != null) {
+			InputStream source = IOUtils.toInputStream(((ReadableResource) resource).getReadable());
 			try {
 				byte[] bytes = IOUtils.toBytes(IOUtils.wrap(source));
 				currentSource = new String(bytes, "UTF-8");
@@ -44,73 +69,64 @@ public class SnippetMethods {
 			finally {
 				source.close();
 			}
-			if (script instanceof ResourceScript) {
-				resource = ((ResourceScript) script).getResource();
-			}
-			else {
-				resource = null;
-			}
 		}
 		else {
 			currentSource = "";
-			resource = null;
 		}
 		VBox vbox = new VBox();
 		AceEditor editor = new AceEditor();
-		editor.setReadOnly(resource == null && script != null);
-		editor.setContent("text/x-glue", currentSource);
-		if (resource != null || script == null) {
-			editor.subscribe(AceEditor.SAVE, new EventHandler<Event>() {
-				@Override
-				public void handle(Event arg0) {
+		System.out.println(resource + " = " + resource.getContentType());
+		editor.setContent(resource.getContentType(), currentSource);
+		editor.subscribe(AceEditor.SAVE, new EventHandler<Event>() {
+			@Override
+			public void handle(Event arg0) {
+				try {
+					WritableContainer<ByteBuffer> writable = ((WritableResource) resource).getWritable();
 					try {
-						Resource target = resource == null ? ResourceUtils.touch(GlueConsoleController.getInstance().getSnippets().getRoot(), fullName.replace('.', '/') + ".glue") : resource;
-						if (target != null) {
-							WritableContainer<ByteBuffer> writable = ((WritableResource) target).getWritable();
-							try {
-								writable.write(IOUtils.wrap(editor.getContent().getBytes("UTF-8"), true));
-								ScriptUtils.getRoot(GlueConsoleController.getInstance().getSnippets()).refresh();
-								// if you update the init script, refresh it
-								if (fullName.equals(GlueConsoleController.getInstance().getInitialScriptName())) {
-									GlueConsoleController.getInstance().resetInitial();
-								}
-							}
-							finally {
-								writable.close();
-							}
+						writable.write(IOUtils.wrap(editor.getContent().getBytes("UTF-8"), true));
+						ScriptUtils.getRoot(GlueConsoleController.getInstance().getSnippets()).refresh();
+						// if you update the init script, refresh it
+						if (fullName.equals(GlueConsoleController.getInstance().getInitialScriptName())) {
+							GlueConsoleController.getInstance().resetInitial();
 						}
+					}
+					finally {
+						writable.close();
+					}
+				}
+				catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		HBox buttons = new HBox();
+		Button delete = new Button("Delete");
+		delete.addEventHandler(ActionEvent.ANY, new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				ResourceContainer<?> parent = resource.getParent();
+				if (parent instanceof ManageableContainer) {
+					try {
+						// if it's a script, also remove the resource
+						if (script != null && resourceToEdit == null) {
+							((ManageableContainer<?>) parent).delete(script.getName());
+						}
+						((ManageableContainer<?>) parent).delete(resource.getName());
+						ScriptUtils.getRoot(GlueConsoleController.getInstance().getSnippets()).refresh();
 					}
 					catch (IOException e) {
 						throw new RuntimeException(e);
 					}
 				}
-			});
-		}
-		HBox buttons = new HBox();
-		if (resource != null) {
-			Button delete = new Button("Delete");
-			delete.addEventHandler(ActionEvent.ANY, new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent arg0) {
-					ResourceContainer<?> parent = resource.getParent();
-					if (parent instanceof ManageableContainer) {
-						try {
-							((ManageableContainer<?>) parent).delete(resource.getName());
-							ScriptUtils.getRoot(GlueConsoleController.getInstance().getSnippets()).refresh();
-						}
-						catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-			});
-			buttons.getChildren().addAll(delete);
-		}
+			}
+		});
+		buttons.getChildren().addAll(delete);
 		vbox.getChildren().addAll(buttons, editor.getWebView());
 		Tab tab = new Tab(fullName);
 		tab.setContent(vbox);
 		GlueConsoleController.getInstance().getTabVisual().getTabs().add(tab);
 		GlueConsoleController.getInstance().getTabVisual().getSelectionModel().select(tab);
+		return tab;
 	}
 	
 

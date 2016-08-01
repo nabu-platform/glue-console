@@ -1,8 +1,12 @@
 package be.nabu.glue.console.plugins;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import be.nabu.glue.ScriptRuntime;
+import be.nabu.glue.api.Lambda;
+import be.nabu.glue.impl.GlueUtils;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.Axis;
 import javafx.scene.chart.BarChart;
@@ -13,8 +17,20 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.shape.TriangleMesh;
 
 public class Plotter {
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static XYChart.Series buildSeries(String name, Lambda lambda, int from, int to) {
+		XYChart.Series series = new XYChart.Series();
+		series.setName(name);
+		ScriptRuntime runtime = ScriptRuntime.getRuntime();
+		for (int x = from; x < to; x++) {
+			series.getData().add(new XYChart.Data(x, GlueUtils.calculate(lambda, runtime, Arrays.asList(x))));
+		}
+		return series;
+	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static XYChart.Series buildSeries(String name, Iterable<?> iterable) {
@@ -147,5 +163,21 @@ public class Plotter {
 			chart.getData().add(new PieChart.Data(data.getXValue().toString(), ((Number) data.getYValue()).doubleValue()));
 		}
 		return chart;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static TriangleMesh buildMesh(Iterable<?> iterable) {
+		TriangleMesh mesh = new TriangleMesh();
+		int counter = 0;
+		for (Object entry : iterable) {
+			if (entry instanceof Iterable) {
+				Iterator iterator = ((Iterable<?>) entry).iterator();
+				mesh.getPoints().addAll(GlueUtils.convert(iterator.next(), Float.class), GlueUtils.convert(iterator.next(), Float.class), GlueUtils.convert(iterator.next(), Float.class));
+			}
+			else {
+				mesh.getPoints().addAll(counter, GlueUtils.convert(entry, Float.class), counter);
+			}
+		}
+		return mesh;
 	}
 }

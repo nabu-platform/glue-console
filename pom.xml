@@ -3,8 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>be.nabu.glue</groupId>
 	<artifactId>glue-console</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>${be.nabu.glue-glue-console-version}</version>
 	<name>glue-console</name>
+	
+	<parent>
+		<groupId>be.nabu</groupId>
+		<artifactId>core</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -14,98 +21,55 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.3.7</version>
-				<extensions>true</extensions>
-			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
 		<dependency>
 			<groupId>be.nabu.glue</groupId>
-			<artifactId>glue-api</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>be.nabu.glue</groupId>
 			<artifactId>glue-validators</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>be.nabu.glue</groupId>
-			<artifactId>glue</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>be.nabu.glue</groupId>
 			<artifactId>glue-integrator</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>be.nabu.glue</groupId>
 			<artifactId>glue-events</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>be.nabu.glue</groupId>
 			<artifactId>glue-database</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
-		
 		<dependency>
 			<groupId>be.nabu.glue</groupId>
 			<artifactId>glue-json</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>be.nabu.glue</groupId>
 			<artifactId>glue-xml</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
-
 		<dependency>
 			<groupId>be.nabu.jfx</groupId>
 			<artifactId>jfx-control-ace</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>be.nabu.libs.resources</groupId>
 			<artifactId>resources-file</artifactId>
-			<version>1.1-SNAPSHOT</version>
 		</dependency>
-
-		<!-- testing -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>be.nabu.libs.resources</groupId>
-			<artifactId>resources-classpath</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>be.nabu.libs.vfs</groupId>
 			<artifactId>vfs-resources</artifactId>
-			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>be.nabu.libs.dms</groupId>
 			<artifactId>dms-core</artifactId>
-			<version>1.1-SNAPSHOT</version>
 		</dependency>
 
-		<!-- can be externalized if pdf editor is moved -->
+		<!-- testing -->
 		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox</artifactId>
-			<version>1.8.8</version>
+			<groupId>be.nabu.libs.resources</groupId>
+			<artifactId>resources-classpath</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

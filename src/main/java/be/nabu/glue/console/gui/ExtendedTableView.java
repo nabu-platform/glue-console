@@ -21,9 +21,9 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
-import be.nabu.glue.api.Lambda;
-import be.nabu.glue.impl.GlueUtils;
-import be.nabu.glue.impl.methods.v2.SeriesMethods;
+import be.nabu.glue.core.api.Lambda;
+import be.nabu.glue.core.impl.GlueUtils;
+import be.nabu.glue.core.impl.methods.v2.SeriesMethods;
 
 @SuppressWarnings("rawtypes")
 public class ExtendedTableView extends TableView<Map> {

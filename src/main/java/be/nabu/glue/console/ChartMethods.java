@@ -13,10 +13,10 @@ import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import be.nabu.glue.annotations.GlueParam;
-import be.nabu.glue.api.Lambda;
 import be.nabu.glue.console.plugins.Plotter;
-import be.nabu.glue.impl.GlueUtils;
-import be.nabu.glue.impl.methods.v2.SeriesMethods;
+import be.nabu.glue.core.api.Lambda;
+import be.nabu.glue.core.impl.GlueUtils;
+import be.nabu.glue.core.impl.methods.v2.SeriesMethods;
 import be.nabu.libs.evaluator.annotations.MethodProviderClass;
 
 @MethodProviderClass(namespace = "chart")

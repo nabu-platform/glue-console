@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import be.nabu.glue.ScriptRuntime;
-import be.nabu.glue.api.Lambda;
-import be.nabu.glue.impl.GlueUtils;
+import be.nabu.glue.core.api.Lambda;
+import be.nabu.glue.core.impl.GlueUtils;
+import be.nabu.glue.utils.ScriptRuntime;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.Axis;
 import javafx.scene.chart.BarChart;

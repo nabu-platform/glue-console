@@ -29,10 +29,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import be.nabu.glue.annotations.GlueMethod;
 import be.nabu.glue.annotations.GlueParam;
-import be.nabu.glue.api.Lambda;
 import be.nabu.glue.console.gui.ExtendedTableView;
-import be.nabu.glue.impl.GlueUtils;
-import be.nabu.glue.impl.methods.FileMethods;
+import be.nabu.glue.core.api.Lambda;
+import be.nabu.glue.core.impl.GlueUtils;
+import be.nabu.glue.core.impl.methods.FileMethods;
 import be.nabu.libs.evaluator.annotations.MethodProviderClass;
 
 @MethodProviderClass(namespace = "console")
